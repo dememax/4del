@@ -8,6 +8,7 @@
 
 from subprocess import run, PIPE
 import sys
+import os
 
 MARKER_LINE = '!!! One of the following masked packages is required to complete your request:'
 PREFIX='- '
@@ -17,8 +18,11 @@ MASK_LINE_AFTER='/usr/portage/profiles/package.mask:'
 CONFIG_FILES = ('/etc/portage/package.accept_keywords/plasma-meta', '/etc/portage/package.unmask/plasma-meta')
 
 def update_for_cmd(cmd):
+    loop = 0
     while True:
+        loop += 1
         # run pretend
+        print(loop, "cmd:", cmd)
         res = run(cmd, stdout=PIPE, stderr=PIPE)
         print('out', res.stdout)
         print('err', res.stderr)
@@ -98,21 +102,44 @@ def update_for_cmd(cmd):
                     continue
             run(['sed', '-E', '-e', sed_expr, '--in-place=.bak', i])
 
-if __name__ == '__main__':
-    e_world = ['emerge', '-epv', 'world']
+def update_packages(pkgs):
+    cmds = list()
     update_for = ('emerge', '-uND', '--with-bdeps=y', '--verbose-conflicts', '--backtrack=30', '-pv')
-    plasma = list(update_for)
-    plasma.append('=kde-plasma/plasma-meta-6.0.5')
-    kdeutils = list(update_for)
-    kdeutils.append('=kde-apps/kdeutils-meta-24.05.0')
-    kdecore = list(update_for)
-    kdecore.append('=kde-apps/kdecore-meta-24.05.0')
-    kdegraphics = list(update_for)
-    kdegraphics.append('=kde-apps/kdegraphics-meta-24.05.0')
+    for p in pkgs:
+        pk_cmd = list(update_for)
+        pk_cmd.append('=' + p)
+        cmds.append(pk_cmd)
     update_world = list(update_for)
     update_world.append('world')
-    for cmd in (plasma, kdecore, kdeutils, kdegraphics, update_world, e_world):
-        print("cmd:", cmd)
+    cmds.append(update_world)
+    e_world = ['emerge', '-epv', 'world']
+    cmds.append(e_world)
+    res = dict()
+    for cmd in cmds:
         r = update_for_cmd(cmd)
         if r:
-            sys.exit(r)
+            print('Last command failed.')
+            res[' '.join(cmd)] = r
+    return res
+
+EBUILD_EXT='.ebuild'
+
+def get_latest_package_version(pkg):
+    a = os.listdir(os.path.join('/usr/portage', pkg))
+    n = pkg.split('/')[1]
+    versions = [i[len(n)+1:-(len(EBUILD_EXT))] for i in a if i.startswith(n) and i.endswith(EBUILD_EXT)]
+    versions.sort()
+    return versions[-1]
+
+METAS=('kde-plasma/plasma-meta', 'kde-apps/kdeutils-meta', 'kde-apps/kdecore-meta', 'kde-apps/kdegraphics-meta')
+
+if __name__ == '__main__':
+    pkgs = list()
+    for pkg in METAS:
+        pkgs.append(pkg + '-' + get_latest_package_version(pkg))
+    r = update_packages(pkgs)
+    if len(r):
+        print("Failed commands:", r)
+        sys.exit(len(r))
+    else:
+        print("All is fine.")
