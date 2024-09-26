@@ -24,16 +24,15 @@ def update_for_cmd(cmd):
         # run pretend
         print(loop, "cmd:", cmd)
         res = run(cmd, stdout=PIPE, stderr=PIPE)
-        print('out', res.stdout)
-        print('err', res.stderr)
+        print('stdout:', res.stdout.decode())
+        lines = res.stderr.decode().split('\n')
+        print('stderr:', '\n'.join(lines))
         if not res.stderr:
             print('No more stderr output. Exiting...')
             return 0
 
         # parse the output to find  the package to unmask
         # let's find the line with the package
-        lines = res.stderr.decode().split('\n')
-        print('lines', lines)
         if '!!! One of the following masked packages is required to complete your request:' not in lines:
             print('No marker line. Exiting...')
             return 0
@@ -100,12 +99,16 @@ def update_for_cmd(cmd):
             if "unmask" in i:
                 if not is_mask:
                     continue
-            run(['sed', '-E', '-e', sed_expr, '--in-place=.bak', i])
+            run(['sed', '-E', '-e', sed_expr, '--in-place', i])
 
 def update_packages(pkgs):
     cmds = list()
     update_for = ('emerge', '-uND', '--with-bdeps=y', '--verbose-conflicts', '--backtrack=30', '-pv')
+    install_exact = ('emerge', '-pv', '--with-bdeps=y', '--verbose-conflicts', '--backtrack=30')
     for p in pkgs:
+        pk_cmd = list(install_exact)
+        pk_cmd.append('=' + p)
+        cmds.append(pk_cmd)
         pk_cmd = list(update_for)
         pk_cmd.append('=' + p)
         cmds.append(pk_cmd)
@@ -131,7 +134,7 @@ def get_latest_package_version(pkg):
     versions.sort()
     return versions[-1]
 
-METAS=('kde-plasma/plasma-meta', 'kde-apps/kdeutils-meta', 'kde-apps/kdecore-meta', 'kde-apps/kdegraphics-meta')
+METAS=('kde-plasma/plasma-meta', 'kde-apps/kdeutils-meta', 'kde-apps/kdecore-meta', 'kde-apps/kdegraphics-meta', 'kde-frameworks/oxygen-icons')
 
 if __name__ == '__main__':
     pkgs = list()
