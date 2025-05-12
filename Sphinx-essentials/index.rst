@@ -24,3 +24,5 @@ Code block
       :caption: Adding code block sample
 
       export A=b
+
+For languages supported: https://pygments.org/docs/lexers/
