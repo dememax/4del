@@ -57,7 +57,7 @@ It was note 2 for
 
    In URI context [2], backslash-escaped whitespace represents a single space.
 
-I've tryed with Sphinx 8.1.3 two other methods,
+I've tried with Sphinx 8.1.3 two other methods,
 but unfortunately they don't work:
 
 #. Use quotes around the file path:
