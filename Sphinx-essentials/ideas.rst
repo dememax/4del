@@ -15,7 +15,7 @@ From Sphinx docs:
 Optional overlining
 ========================
 
-The overlining must be used to have more context for diffs.
+The overlining must be always used to have more context for diffs.
 
 ===================================
 At least as long as the text
