@@ -1,13 +1,14 @@
-#################
+####################
 Sphinx essentials
-#################
+####################
 
 My Quick help on Shpinx.
 
 The main page: https://www.sphinx-doc.org/
 
+**********
 Sections
-********
+**********
 
 * ``#`` with overline, for parts
 * ``*`` with overline, for chapters
@@ -16,8 +17,9 @@ Sections
 * ``^`` for subsubsections
 * ``"`` for paragraphs
 
+************
 Code block
-**********
+************
 
 .. code-block:: rst
    :caption: Adding code block sample
@@ -29,9 +31,9 @@ Code block
 
 For languages supported: https://pygments.org/docs/lexers/
 
-*************
+***************
 Images
-*************
+***************
 
 .. code-block:: rst
    :caption: Introducing an image from a local Jpeg file
