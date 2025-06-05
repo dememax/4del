@@ -6,7 +6,7 @@ Sphinx discoveries
 Queries for static files
 ***************************
 
-The query string like "url?v=xxxxxxx" appended to static file URLs
+The query string like ``url?v=xxxxxxx`` appended to static file URLs
 (like CSS or JavaScript files) in Sphinx-generated HTML
 is a common web development technique called cache busting.
 
@@ -27,7 +27,7 @@ For example:
 
 In the context of Sphinx:
 
-* The v=code part is a version identifier. This "code" is often:
+* The ``v=code`` part is a version identifier. This ``code`` is often:
 
   * A short hash of the file's content.
   * A version number derived from the Sphinx version or the theme version.
