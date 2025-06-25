@@ -101,7 +101,7 @@ but unfortunately they don't work:
 Put link to the local doc
 *******************************
 
-It should be a rst document, so, to have *.rst extension.
+It should be a rst document, so, to have \*.rst extension.
 
 The name of file can contain spaces, not like for image names,
 say, you've got '09-51 Ubuntu apt - Phasing - Asking Meta.rst',
