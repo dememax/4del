@@ -96,3 +96,18 @@ but unfortunately they don't work:
       .. image:: ./IMG_20250505_144207%20Guillaume%20-%20Yocto%203%20layers%20-%20v4l2.jpg
 
       ..../docs/index.rst:8: WARNING: image file not readable: IMG_20250505_144207%20Guillaume%20-%20Yocto%203%20layers%20-%20v4l2.jpg [image.not_readable]
+
+*******************************
+Put link to the local doc
+*******************************
+
+It should be a rst document, so, to have *.rst extension.
+
+The name of file can contain spaces, not like for image names,
+say, you've got '09-51 Ubuntu apt - Phasing - Asking Meta.rst',
+omit the extension of the file:
+
+.. code-block:: rst
+   :caption: Including a link to the local document
+
+   :doc:`./09-51 Ubuntu apt - Phasing - Asking Meta`
