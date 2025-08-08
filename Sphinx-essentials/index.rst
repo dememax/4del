@@ -31,6 +31,18 @@ Code block
 
 For languages supported: https://pygments.org/docs/lexers/
 
+=============
+Indentation
+=============
+
+The specific number of spaces is not fixed,
+but it must be at least one
+more than the directive's own indentation
+and must be the same for the whole block.
+
+Why do most code-block examples use 3 spaces?
+This is a convention, not a requirement.
+
 ***************
 Images
 ***************
@@ -61,6 +73,8 @@ This gives an error:
    ..../docs/index.rst:8: WARNING: image file not readable: IMG_20250505_144207Guillaume-Yocto3layers-v4l2.jpg [image.not_readable]
 
 Only backslash (\\) escape is working for spaces in file names.
+
+Note: In literalinclude you don't need to escape spaces, keep them as-is.
 
 From a note at https://docutils.sourceforge.io/docs/ref/rst/restructuredtext.html#escaping-mechanism
 
@@ -113,3 +127,20 @@ you need only omit the extension of the file:
    :doc:`./09-51 Ubuntu apt - Phasing - Asking Meta`
 
 In the text, the title will be displayed, not the file name.
+
+***************************************************
+Include a raw log file
+***************************************************
+
+.. code-block:: rst
+   :caption: Include whole content of a text file without indent on a page
+
+   .. literalinclude:: 11-02 curl get libwebsockets-1.23 from yocto recipe - redirect.txt
+      :language: none
+
+===========
+Names
+===========
+
+In literalinclude you don't need to escape spaces, keep them as-is.
+Only for images.
