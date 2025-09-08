@@ -25,3 +25,40 @@ inline void * get_next_system_call_call(const std::string & n)
     }
     return ret;
 }
+
+// WHY A MACRO? A pragmatic exception to the "avoid macros" rule.
+//
+// PROBLEM:
+// Intercepting various syscalls (like 'open', 'close', 'stat', etc.) requires highly
+// repetitive boilerplate for each function:
+//   1. A unique function pointer type (e.g., call_type).
+//   2. A unique static variable to store the original function (e.g., original_call).
+//   3. Initialization logic that uses the function's name as a string (e.g., "stat").
+//
+// SOLUTION:
+// This macro uses the preprocessor's unique text-manipulation capabilities to
+// generate all this boilerplate from a single line. It uses:
+//   - Token-pasting (##) to create the unique type and variable names.
+//   - Stringizing (#) to create the string literal for the lookup function.
+//
+// WHY NOT TEMPLATES OR CONSTEXPR?
+// Modern C++ alternatives like templates are powerful but cannot achieve this.
+// They operate on types and values, but they CANNOT generate new, unique
+// *identifier names* (like 'open', 'close', 'stat', etc.) at compile time and
+// corresponding string value to dlsym() call.
+//
+// This macro solves a pure code-generation problem, keeping the code DRY
+// (Don't Repeat Yourself), consistent, and easier to maintain.
+#define SYSTEM_CALL_OVERRIDE_BEGIN(name, ...) \
+    extern "C" { \
+    int name(__VA_ARGS__) \
+    { \
+        using call_type = int(*)(__VA_ARGS__); \
+        static const call_type original_call = (call_type)get_next_system_call_call(#name);
+
+// Unfortunately, we cannot re-use arguments to SYSTEM_CALL_OVERRIDE_BEGIN(),
+// they contain types of arguments; here, we need only names of arguments.
+#define SYSTEM_CALL_OVERRIDE_END(...) \
+        return original_call(__VA_ARGS__); \
+    } \
+    } // extern "C"

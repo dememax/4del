@@ -6,13 +6,7 @@
 
 #include <fcntl.h>
 
-extern "C" {
-
-int open(const char *pathname, int flags, ...)
-{
-    // Get the original open function
-    using open_func_t = int(*)(const char*, int, ...);
-    static open_func_t original_open = (open_func_t)get_next_system_call_call("open");
+SYSTEM_CALL_OVERRIDE_BEGIN(open, const char * const pathname, int flags, ...)
 
     // Check if the target application is opening our emulated device
     if (pathname == EMULATED_DEVICE_ABSOLUTE_PATH) {
@@ -33,10 +27,7 @@ int open(const char *pathname, int flags, ...)
         va_start(args, flags);
         mode_t mode = va_arg(args, mode_t);
         va_end(args);
-        return original_open(pathname, flags, mode);
+        return original_call(pathname, flags, mode);
     }
 
-    return original_open(pathname, flags);
-}
-
-} // extern "C"
+SYSTEM_CALL_OVERRIDE_END(pathname, flags)
