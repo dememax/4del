@@ -5,6 +5,7 @@
 #include "emulate_common.hpp"
 
 #include <sys/stat.h>
+#include <sys/sysmacros.h>
 
 SYSTEM_CALL_OVERRIDE_BEGIN(stat, const char * pathname, struct stat * statbuf)
 
@@ -15,7 +16,10 @@ SYSTEM_CALL_OVERRIDE_BEGIN(stat, const char * pathname, struct stat * statbuf)
             std::print("[EMU] Error the pointer to struct stat for '{}' is NULL.\n", pathname);
             return EFAULT;
         }
+        statbuf->st_rdev = makedev(81, 123);
         statbuf->st_mode = S_IFCHR;
+        statbuf->st_size = 0;
+        statbuf->st_nlink = 1;
         return 0; // success
     }
 

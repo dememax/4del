@@ -7,6 +7,8 @@
 #include <string>
 
 constexpr std::string EMULATED_DEVICE_ABSOLUTE_PATH("/dev/video123");
+constexpr unsigned major_num = 81;
+constexpr unsigned minor_num = 123;
 constexpr int EMULATED_DEVICE_HANDLE(987654321);
 inline bool is_opened(false);
 
@@ -49,12 +51,16 @@ inline void * get_next_system_call_call(const std::string & n)
 //
 // This macro solves a pure code-generation problem, keeping the code DRY
 // (Don't Repeat Yourself), consistent, and easier to maintain.
-#define SYSTEM_CALL_OVERRIDE_BEGIN(name, ...) \
+#define SYSTEM_CALL_OVERRIDE_BEGIN_RETTYPE(rettype, name, ...) \
     extern "C" { \
-    int name(__VA_ARGS__) \
+    rettype name(__VA_ARGS__) \
     { \
-        using call_type = int(*)(__VA_ARGS__); \
+        using call_type = rettype(*)(__VA_ARGS__); \
         static const call_type original_call = (call_type)get_next_system_call_call(#name);
+
+// the majority of system calls return int, so, let's make it by default
+#define SYSTEM_CALL_OVERRIDE_BEGIN(name, ...) \
+    SYSTEM_CALL_OVERRIDE_BEGIN_RETTYPE(int, name, __VA_ARGS__)
 
 // Unfortunately, we cannot re-use arguments to SYSTEM_CALL_OVERRIDE_BEGIN(),
 // they contain types of arguments; here, we need only names of arguments.

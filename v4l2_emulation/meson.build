@@ -5,9 +5,12 @@ project('v4l2-emu', 'c', 'cpp', meson_version: '>=1.7.0', default_options: 'cpp_
 
 sources = [
     'emulate_close.cpp',
+    'emulate_fopen.cpp',
     'emulate_ioctl.cpp',
     'emulate_open.cpp',
+    'emulate_openat.cpp',
     'emulate_stat.cpp',
+    # 'emulate_syscall.cpp',
   ]
 
 dl_dep = dependency('dl')
