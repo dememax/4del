@@ -7,6 +7,7 @@ sources = [
     'emulate_close.cpp',
     'emulate_ioctl.cpp',
     'emulate_open.cpp',
+    'emulate_stat.cpp',
   ]
 
 dl_dep = dependency('dl')
