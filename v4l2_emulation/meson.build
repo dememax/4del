@@ -10,7 +10,7 @@ sources = [
     'emulate_open.cpp',
     'emulate_openat.cpp',
     'emulate_stat.cpp',
-    # 'emulate_syscall.cpp',
+    'emulate_syscall.cpp',
   ]
 
 dl_dep = dependency('dl')

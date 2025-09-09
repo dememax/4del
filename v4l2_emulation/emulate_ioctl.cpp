@@ -10,7 +10,7 @@
 
 namespace { // Anonymous
 
-void f_QUERYCAP(void * a)
+int f_QUERYCAP(void * a)
 {
     v4l2_capability & caps = *static_cast<v4l2_capability *>(a);
     const char driver[] = "Emu-v4l2";
@@ -22,13 +22,28 @@ void f_QUERYCAP(void * a)
     caps.version = 1;
     caps.capabilities = V4L2_CAP_DEVICE_CAPS;
     caps.device_caps = V4L2_CAP_VIDEO_OUTPUT;
+    return 0; // Success
+}
+
+int f_ENUMINPUT(void * a)
+{
+    v4l2_input & input = *static_cast<v4l2_input*>(a);
+    std::print("[EMU] In ENUMINPUT, index={}\n", input.index);
+    return -1; // the end of the input list has been reached (empty)
+}
+
+int f_G_EXT_CTRLS(void * a)
+{
+    v4l2_ext_controls & controls = *static_cast<v4l2_ext_controls*>(a);
+    std::print("[EMU] In G_EXT_CTRLS, count={}\n", controls.count);
+    return EINVAL;
 }
 
 } // Anonymous namespace
 
 #define CASE_REQ_ARG(name) \
     case VIDIOC_ ## name: \
-        std::print("[EMU] Intercepted ioctl() for {}\n", #name); \
+        std::print("[EMU] Intercepted ioctl() for {} (#{})\n", #name, request); \
         { \
             va_list args; \
             va_start(args, request); \
@@ -38,10 +53,15 @@ void f_QUERYCAP(void * a)
                 std::print("[EMU] Error for intercepted ioctl() for {}: arg is null\n", #name); \
                 return EINVAL; \
             } \
-            f_ ## name(argp); \
+            return f_ ## name(argp); \
         } \
         break;
 
+#define CASE_REQ_ARG_STUB(name) \
+    case VIDIOC_ ## name: \
+        std::print("[EMU] Intercepted ioctl() for {} (#{}): Not implemented\n", #name, request); \
+        return EINVAL; \
+        break;
 
 SYSTEM_CALL_OVERRIDE_BEGIN(ioctl, int fd, unsigned long request, ...)
 
@@ -63,6 +83,112 @@ SYSTEM_CALL_OVERRIDE_BEGIN(ioctl, int fd, unsigned long request, ...)
 
     switch(request) {
     CASE_REQ_ARG(QUERYCAP)
+    CASE_REQ_ARG(G_EXT_CTRLS)
+    CASE_REQ_ARG_STUB(CREATE_BUFS)
+    CASE_REQ_ARG_STUB(CROPCAP)
+    CASE_REQ_ARG_STUB(DBG_G_CHIP_INFO)
+    CASE_REQ_ARG_STUB(DBG_G_REGISTER)
+    CASE_REQ_ARG_STUB(DBG_S_REGISTER)
+    CASE_REQ_ARG_STUB(DECODER_CMD)
+    CASE_REQ_ARG_STUB(TRY_DECODER_CMD)
+    CASE_REQ_ARG_STUB(DQEVENT)
+    CASE_REQ_ARG_STUB(DV_TIMINGS_CAP)
+    // CASE_REQ_ARG_STUB(SUBDEV_DV_TIMINGS_CAP)
+    CASE_REQ_ARG_STUB(ENCODER_CMD)
+    CASE_REQ_ARG_STUB(TRY_ENCODER_CMD)
+    CASE_REQ_ARG_STUB(ENUMAUDIO)
+    CASE_REQ_ARG_STUB(ENUMAUDOUT)
+    CASE_REQ_ARG_STUB(ENUM_DV_TIMINGS)
+    // CASE_REQ_ARG_STUB(SUBDEV_ENUM_DV_TIMINGS)
+    CASE_REQ_ARG_STUB(ENUM_FMT)
+    CASE_REQ_ARG_STUB(ENUM_FRAMESIZES)
+    CASE_REQ_ARG_STUB(ENUM_FRAMEINTERVALS)
+    CASE_REQ_ARG_STUB(ENUM_FREQ_BANDS)
+    CASE_REQ_ARG(ENUMINPUT)
+    CASE_REQ_ARG_STUB(ENUMOUTPUT)
+    CASE_REQ_ARG_STUB(ENUMSTD)
+    // CASE_REQ_ARG_STUB(SUBDEV_ENUMSTD)
+    CASE_REQ_ARG_STUB(EXPBUF)
+    CASE_REQ_ARG_STUB(G_AUDIO)
+    CASE_REQ_ARG_STUB(S_AUDIO)
+    CASE_REQ_ARG_STUB(G_AUDOUT)
+    CASE_REQ_ARG_STUB(S_AUDOUT)
+    CASE_REQ_ARG_STUB(G_CROP)
+    CASE_REQ_ARG_STUB(S_CROP)
+    CASE_REQ_ARG_STUB(G_CTRL)
+    CASE_REQ_ARG_STUB(S_CTRL)
+    CASE_REQ_ARG_STUB(G_DV_TIMINGS)
+    CASE_REQ_ARG_STUB(S_DV_TIMINGS)
+    CASE_REQ_ARG_STUB(G_EDID)
+    CASE_REQ_ARG_STUB(S_EDID)
+    // CASE_REQ_ARG_STUB(SUBDEV_G_EDID)
+    // CASE_REQ_ARG_STUB(SUBDEV_S_EDID)
+    CASE_REQ_ARG_STUB(G_ENC_INDEX)
+    CASE_REQ_ARG_STUB(S_EXT_CTRLS)
+    CASE_REQ_ARG_STUB(TRY_EXT_CTRLS)
+    CASE_REQ_ARG_STUB(G_FBUF)
+    CASE_REQ_ARG_STUB(S_FBUF)
+    CASE_REQ_ARG_STUB(G_FMT)
+    CASE_REQ_ARG_STUB(S_FMT)
+    CASE_REQ_ARG_STUB(TRY_FMT)
+    CASE_REQ_ARG_STUB(G_FREQUENCY)
+    CASE_REQ_ARG_STUB(S_FREQUENCY)
+    CASE_REQ_ARG_STUB(G_INPUT)
+    CASE_REQ_ARG_STUB(S_INPUT)
+    CASE_REQ_ARG_STUB(G_JPEGCOMP)
+    CASE_REQ_ARG_STUB(S_JPEGCOMP)
+    CASE_REQ_ARG_STUB(G_MODULATOR)
+    CASE_REQ_ARG_STUB(S_MODULATOR)
+    CASE_REQ_ARG_STUB(G_OUTPUT)
+    CASE_REQ_ARG_STUB(S_OUTPUT)
+    CASE_REQ_ARG_STUB(G_PARM)
+    CASE_REQ_ARG_STUB(S_PARM)
+    CASE_REQ_ARG_STUB(G_PRIORITY)
+    CASE_REQ_ARG_STUB(S_PRIORITY)
+    CASE_REQ_ARG_STUB(G_SELECTION)
+    CASE_REQ_ARG_STUB(S_SELECTION)
+    CASE_REQ_ARG_STUB(G_SLICED_VBI_CAP)
+    CASE_REQ_ARG_STUB(G_STD)
+    CASE_REQ_ARG_STUB(S_STD)
+    // CASE_REQ_ARG_STUB(SUBDEV_G_STD)
+    // CASE_REQ_ARG_STUB(SUBDEV_S_STD)
+    CASE_REQ_ARG_STUB(G_TUNER)
+    CASE_REQ_ARG_STUB(S_TUNER)
+    CASE_REQ_ARG_STUB(LOG_STATUS)
+    CASE_REQ_ARG_STUB(OVERLAY)
+    CASE_REQ_ARG_STUB(PREPARE_BUF)
+    CASE_REQ_ARG_STUB(QBUF)
+    CASE_REQ_ARG_STUB(DQBUF)
+    CASE_REQ_ARG_STUB(QUERYBUF)
+    CASE_REQ_ARG_STUB(QUERYCTRL)
+    CASE_REQ_ARG_STUB(QUERY_EXT_CTRL)
+    CASE_REQ_ARG_STUB(QUERYMENU)
+    CASE_REQ_ARG_STUB(QUERY_DV_TIMINGS)
+    CASE_REQ_ARG_STUB(QUERYSTD)
+    // CASE_REQ_ARG_STUB(SUBDEV_QUERYSTD)
+    CASE_REQ_ARG_STUB(REQBUFS)
+    CASE_REQ_ARG_STUB(REMOVE_BUFS)
+    CASE_REQ_ARG_STUB(S_HW_FREQ_SEEK)
+    CASE_REQ_ARG_STUB(STREAMON)
+    CASE_REQ_ARG_STUB(STREAMOFF)
+    // CASE_REQ_ARG_STUB(SUBDEV_ENUM_FRAME_INTERVAL)
+    // CASE_REQ_ARG_STUB(SUBDEV_ENUM_FRAME_SIZE)
+    // CASE_REQ_ARG_STUB(SUBDEV_ENUM_MBUS_CODE)
+    // CASE_REQ_ARG_STUB(SUBDEV_G_CROP)
+    // CASE_REQ_ARG_STUB(SUBDEV_S_CROP)
+    // CASE_REQ_ARG_STUB(SUBDEV_G_FMT)
+    // CASE_REQ_ARG_STUB(SUBDEV_S_FMT)
+    // CASE_REQ_ARG_STUB(SUBDEV_G_FRAME_INTERVAL)
+    // CASE_REQ_ARG_STUB(SUBDEV_S_FRAME_INTERVAL)
+    // CASE_REQ_ARG_STUB(SUBDEV_G_ROUTING)
+    // CASE_REQ_ARG_STUB(SUBDEV_S_ROUTING)
+    // CASE_REQ_ARG_STUB(SUBDEV_G_SELECTION)
+    // CASE_REQ_ARG_STUB(SUBDEV_S_SELECTION)
+    // CASE_REQ_ARG_STUB(SUBDEV_G_CLIENT_CAP)
+    // CASE_REQ_ARG_STUB(SUBDEV_S_CLIENT_CAP)
+    // CASE_REQ_ARG_STUB(SUBDEV_QUERYCAP)
+    CASE_REQ_ARG_STUB(SUBSCRIBE_EVENT)
+    CASE_REQ_ARG_STUB(UNSUBSCRIBE_EVENT)
     default:
         std::print("[EMU] Unknown request {} for intercepted ioctl()\n", request);
         return EINVAL;
