@@ -34,7 +34,7 @@ int f_ENUMINPUT(void * a)
     // the end of the input list has been reached (empty):
     // 1) negative return value + 2) EINVAL in errno
     errno = EINVAL;
-    return -1; 
+    return -1;
 }
 
 int f_G_EXT_CTRLS(void * a)
@@ -42,7 +42,7 @@ int f_G_EXT_CTRLS(void * a)
     v4l2_ext_controls & controls = *static_cast<v4l2_ext_controls*>(a);
     std::print("[EMU] In G_EXT_CTRLS, count={}\n", controls.count);
     errno = EINVAL;
-    return -1; 
+    return -1;
 }
 
 int f_ENUMSTD(void * a)
@@ -60,7 +60,31 @@ int f_ENUMSTD(void * a)
         return 0;
     }
     errno = EINVAL;
-    return -1; 
+    return -1;
+}
+
+int f_QUERYCTRL(void * a)
+{
+    v4l2_queryctrl & control = *static_cast<v4l2_queryctrl*>(a);
+    std::print("[EMU] In QUERYCTRL, id={}\n", control.id);
+    errno = EINVAL;
+    return -1;
+}
+
+int f_G_STD(void * a)
+{
+    v4l2_std_id & std_id = *static_cast<v4l2_std_id*>(a);
+    std::print("[EMU] In G_STD\n");
+    std_id = V4L2_STD_UNKNOWN;
+    return 0;
+}
+
+int f_G_OUTPUT(void * a)
+{
+    int & index = *static_cast<int*>(a);
+    std::print("[EMU] In G_OUTPUT\n");
+    index = 0;
+    return 0;
 }
 
 } // Anonymous namespace
@@ -170,7 +194,7 @@ SYSTEM_CALL_OVERRIDE_BEGIN(ioctl, int fd, unsigned long request, ...)
     CASE_REQ_ARG_STUB(S_JPEGCOMP)
     CASE_REQ_ARG_STUB(G_MODULATOR)
     CASE_REQ_ARG_STUB(S_MODULATOR)
-    CASE_REQ_ARG_STUB(G_OUTPUT)
+    CASE_REQ_ARG(G_OUTPUT)
     CASE_REQ_ARG_STUB(S_OUTPUT)
     CASE_REQ_ARG_STUB(G_PARM)
     CASE_REQ_ARG_STUB(S_PARM)
@@ -179,7 +203,7 @@ SYSTEM_CALL_OVERRIDE_BEGIN(ioctl, int fd, unsigned long request, ...)
     CASE_REQ_ARG_STUB(G_SELECTION)
     CASE_REQ_ARG_STUB(S_SELECTION)
     CASE_REQ_ARG_STUB(G_SLICED_VBI_CAP)
-    CASE_REQ_ARG_STUB(G_STD)
+    CASE_REQ_ARG(G_STD)
     CASE_REQ_ARG_STUB(S_STD)
     // CASE_REQ_ARG_STUB(SUBDEV_G_STD)
     // CASE_REQ_ARG_STUB(SUBDEV_S_STD)
@@ -191,7 +215,7 @@ SYSTEM_CALL_OVERRIDE_BEGIN(ioctl, int fd, unsigned long request, ...)
     CASE_REQ_ARG_STUB(QBUF)
     CASE_REQ_ARG_STUB(DQBUF)
     CASE_REQ_ARG_STUB(QUERYBUF)
-    CASE_REQ_ARG_STUB(QUERYCTRL)
+    CASE_REQ_ARG(QUERYCTRL)
     CASE_REQ_ARG_STUB(QUERY_EXT_CTRL)
     CASE_REQ_ARG_STUB(QUERYMENU)
     CASE_REQ_ARG_STUB(QUERY_DV_TIMINGS)
@@ -223,7 +247,7 @@ SYSTEM_CALL_OVERRIDE_BEGIN(ioctl, int fd, unsigned long request, ...)
     default:
         std::print("[EMU] Unknown request {} for intercepted ioctl()\n", request);
         errno = EINVAL;
-        return -1; 
+        return -1;
     }
     return 0; // success
 } // ioctl() in SYSTEM_CALL_OVERRIDE_BEGIN
