@@ -7,6 +7,8 @@
 #include <sys/ioctl.h>
 #include <linux/videodev2.h>
 #include <string.h>
+#include <strings.h>
+#include <errno.h>
 
 namespace { // Anonymous
 
@@ -28,15 +30,37 @@ int f_QUERYCAP(void * a)
 int f_ENUMINPUT(void * a)
 {
     v4l2_input & input = *static_cast<v4l2_input*>(a);
-    std::print("[EMU] In ENUMINPUT, index={}\n", input.index);
-    return -1; // the end of the input list has been reached (empty)
+    std::print("[EMU] In ENUMINPUT, index={} - we don't have any input, we are output\n", input.index);
+    // the end of the input list has been reached (empty):
+    // 1) negative return value + 2) EINVAL in errno
+    errno = EINVAL;
+    return -1; 
 }
 
 int f_G_EXT_CTRLS(void * a)
 {
     v4l2_ext_controls & controls = *static_cast<v4l2_ext_controls*>(a);
     std::print("[EMU] In G_EXT_CTRLS, count={}\n", controls.count);
-    return EINVAL;
+    errno = EINVAL;
+    return -1; 
+}
+
+int f_ENUMSTD(void * a)
+{
+    v4l2_standard & standard = *static_cast<v4l2_standard*>(a);
+    std::print("[EMU] In ENUMSTD, index={}\n", standard.index);
+    if (standard.index == 0) {
+        bzero(&standard, sizeof standard);
+        standard.id = V4L2_STD_UNKNOWN;
+        const char std_name[] = "API Emul STD";
+        strncpy((char*)standard.name, std_name, sizeof standard.name); // 24
+        standard.frameperiod.numerator = 2;
+        standard.frameperiod.denominator = 1;
+        standard.framelines = 1024 * 2;
+        return 0;
+    }
+    errno = EINVAL;
+    return -1; 
 }
 
 } // Anonymous namespace
@@ -51,16 +75,23 @@ int f_G_EXT_CTRLS(void * a)
             va_end(args); \
             if (!argp) { \
                 std::print("[EMU] Error for intercepted ioctl() for {}: arg is null\n", #name); \
-                return EINVAL; \
+                errno = EINVAL; \
+                return -1; \
             } \
-            return f_ ## name(argp); \
+            const int ret = f_ ## name(argp); \
+            if (ret) \
+                std::print("[EMU] {} result: {}, '{}' (#{})\n", #name, ret, strerror(errno), int(errno)); \
+            else \
+                std::print("[EMU] {} result: Success\n", #name); \
+            return ret; \
         } \
         break;
 
 #define CASE_REQ_ARG_STUB(name) \
     case VIDIOC_ ## name: \
         std::print("[EMU] Intercepted ioctl() for {} (#{}): Not implemented\n", #name, request); \
-        return EINVAL; \
+        errno = EINVAL; \
+        return -1; \
         break;
 
 SYSTEM_CALL_OVERRIDE_BEGIN(ioctl, int fd, unsigned long request, ...)
@@ -106,7 +137,7 @@ SYSTEM_CALL_OVERRIDE_BEGIN(ioctl, int fd, unsigned long request, ...)
     CASE_REQ_ARG_STUB(ENUM_FREQ_BANDS)
     CASE_REQ_ARG(ENUMINPUT)
     CASE_REQ_ARG_STUB(ENUMOUTPUT)
-    CASE_REQ_ARG_STUB(ENUMSTD)
+    CASE_REQ_ARG(ENUMSTD)
     // CASE_REQ_ARG_STUB(SUBDEV_ENUMSTD)
     CASE_REQ_ARG_STUB(EXPBUF)
     CASE_REQ_ARG_STUB(G_AUDIO)
@@ -191,7 +222,8 @@ SYSTEM_CALL_OVERRIDE_BEGIN(ioctl, int fd, unsigned long request, ...)
     CASE_REQ_ARG_STUB(UNSUBSCRIBE_EVENT)
     default:
         std::print("[EMU] Unknown request {} for intercepted ioctl()\n", request);
-        return EINVAL;
+        errno = EINVAL;
+        return -1; 
     }
     return 0; // success
 } // ioctl() in SYSTEM_CALL_OVERRIDE_BEGIN
