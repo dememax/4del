@@ -390,10 +390,18 @@ SYSTEM_CALL_OVERRIDE_BEGIN(syscall, long number, ...)
     CASE_SYSCALL(lsm_set_self_attr)
     CASE_SYSCALL(lsm_list_modules)
     CASE_SYSCALL(mseal)
+#ifdef __NR_setxattrat
     CASE_SYSCALL(setxattrat)
+#endif
+#ifdef __NR_getxattrat
     CASE_SYSCALL(getxattrat)
+#endif
+#ifdef __NR_listxattrat
     CASE_SYSCALL(listxattrat)
+#endif
+#ifdef __NR_removexattrat
     CASE_SYSCALL(removexattrat)
+#endif
 
 
     default:
