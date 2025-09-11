@@ -9,6 +9,7 @@
 #include <string.h>
 #include <strings.h>
 #include <errno.h>
+#include <format>
 
 namespace { // Anonymous
 
@@ -87,6 +88,65 @@ int f_G_OUTPUT(void * a)
     return 0;
 }
 
+template<typename T>
+std::string v4l2_buf_type_to_str(const T t)
+{
+#define CASE_BUF_TYPE(n) case V4L2_BUF_TYPE_ ## n: return #n;
+    switch(static_cast<v4l2_buf_type>(t)) {
+    CASE_BUF_TYPE(VIDEO_CAPTURE)
+    CASE_BUF_TYPE(VIDEO_OUTPUT)
+    CASE_BUF_TYPE(VIDEO_OVERLAY)
+    CASE_BUF_TYPE(VBI_CAPTURE)
+    CASE_BUF_TYPE(VBI_OUTPUT)
+    CASE_BUF_TYPE(SLICED_VBI_CAPTURE)
+    CASE_BUF_TYPE(SLICED_VBI_OUTPUT)
+    CASE_BUF_TYPE(VIDEO_OUTPUT_OVERLAY)
+    CASE_BUF_TYPE(VIDEO_CAPTURE_MPLANE)
+    CASE_BUF_TYPE(VIDEO_OUTPUT_MPLANE)
+    CASE_BUF_TYPE(SDR_CAPTURE)
+    CASE_BUF_TYPE(SDR_OUTPUT)
+    CASE_BUF_TYPE(META_CAPTURE)
+    CASE_BUF_TYPE(META_OUTPUT)
+    CASE_BUF_TYPE(PRIVATE)
+    default:
+        return std::format("Unknown #{}", int(t));
+    }
+#undef CASE_BUF_TYPE
+}
+
+int f_ENUM_FMT(void * a)
+{
+    v4l2_fmtdesc & format = *static_cast<v4l2_fmtdesc*>(a);
+    std::print("[EMU] In ENUM_FMT: index={}, type={}, mbus_code={}\n", format.index, v4l2_buf_type_to_str(format.type), format.mbus_code);
+    // we expose only one output format for this output
+    if (format.index != 0 or format.type != V4L2_BUF_TYPE_VIDEO_OUTPUT or format.mbus_code != 0) {
+        errno = EINVAL;
+        return -1;
+    }
+    format.flags = 0;
+    const char fmt_desc[] = "32-bit RGBA 8-8-8-8";
+    strncpy((char*)format.description, fmt_desc, sizeof format.description); // 32
+    format.pixelformat = V4L2_PIX_FMT_RGBA32;
+    return 0;
+}
+
+int f_CROPCAP(void * a)
+{
+    v4l2_cropcap & cropcap = *static_cast<v4l2_cropcap*>(a);
+    std::print("[EMU] In CROPCAP: type={}\n", v4l2_buf_type_to_str(cropcap.type));
+    // we expose only one output format for this output
+    if (cropcap.type != V4L2_BUF_TYPE_VIDEO_OUTPUT) {
+        errno = EINVAL;
+        return -1;
+    }
+    constexpr v4l2_rect rect{0, 0, 1023, 2047};
+    cropcap.bounds = rect;
+    cropcap.defrect = rect;
+    constexpr v4l2_fract aspect{1, 1};
+    cropcap.pixelaspect = aspect;
+    return 0;
+}
+
 } // Anonymous namespace
 
 #define CASE_REQ_ARG(name) \
@@ -140,7 +200,7 @@ SYSTEM_CALL_OVERRIDE_BEGIN(ioctl, int fd, unsigned long request, ...)
     CASE_REQ_ARG(QUERYCAP)
     CASE_REQ_ARG(G_EXT_CTRLS)
     CASE_REQ_ARG_STUB(CREATE_BUFS)
-    CASE_REQ_ARG_STUB(CROPCAP)
+    CASE_REQ_ARG(CROPCAP)
     CASE_REQ_ARG_STUB(DBG_G_CHIP_INFO)
     CASE_REQ_ARG_STUB(DBG_G_REGISTER)
     CASE_REQ_ARG_STUB(DBG_S_REGISTER)
@@ -155,7 +215,7 @@ SYSTEM_CALL_OVERRIDE_BEGIN(ioctl, int fd, unsigned long request, ...)
     CASE_REQ_ARG_STUB(ENUMAUDOUT)
     CASE_REQ_ARG_STUB(ENUM_DV_TIMINGS)
     // CASE_REQ_ARG_STUB(SUBDEV_ENUM_DV_TIMINGS)
-    CASE_REQ_ARG_STUB(ENUM_FMT)
+    CASE_REQ_ARG(ENUM_FMT)
     CASE_REQ_ARG_STUB(ENUM_FRAMESIZES)
     CASE_REQ_ARG_STUB(ENUM_FRAMEINTERVALS)
     CASE_REQ_ARG_STUB(ENUM_FREQ_BANDS)
