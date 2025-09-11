@@ -5,7 +5,6 @@
 #include "emulate_common.hpp"
 
 #include <sys/ioctl.h>
-#include <linux/videodev2.h>
 #include <string.h>
 #include <strings.h>
 #include <errno.h>
@@ -55,9 +54,8 @@ int f_ENUMSTD(void * a)
         standard.id = V4L2_STD_UNKNOWN;
         const char std_name[] = "API Emul STD";
         strncpy((char*)standard.name, std_name, sizeof standard.name); // 24
-        standard.frameperiod.numerator = 2;
-        standard.frameperiod.denominator = 1;
-        standard.framelines = 1024 * 2;
+        standard.frameperiod = EMULATED_FPS;
+        standard.framelines = EMULATED_HEIGHT;
         return 0;
     }
     errno = EINVAL;
@@ -114,6 +112,17 @@ std::string v4l2_buf_type_to_str(const T t)
 #undef CASE_BUF_TYPE
 }
 
+std::string v4l2_format_to_string(unsigned format) {
+    char fourcc[5] = {
+        static_cast<char>(format & 0xFF),
+        static_cast<char>((format >> 8) & 0xFF),
+        static_cast<char>((format >> 16) & 0xFF),
+        static_cast<char>((format >> 24) & 0xFF),
+        '\0'
+    };
+    return std::string(fourcc);
+}
+
 int f_ENUM_FMT(void * a)
 {
     v4l2_fmtdesc & format = *static_cast<v4l2_fmtdesc*>(a);
@@ -126,7 +135,7 @@ int f_ENUM_FMT(void * a)
     format.flags = 0;
     const char fmt_desc[] = "32-bit RGBA 8-8-8-8";
     strncpy((char*)format.description, fmt_desc, sizeof format.description); // 32
-    format.pixelformat = V4L2_PIX_FMT_RGBA32;
+    format.pixelformat = EMULATED_PIXEL_FORMAT;
     return 0;
 }
 
@@ -139,13 +148,119 @@ int f_CROPCAP(void * a)
         errno = EINVAL;
         return -1;
     }
-    constexpr v4l2_rect rect{0, 0, 1023, 2047};
+    constexpr v4l2_rect rect{0, 0, EMULATED_WIDTH-1, EMULATED_HEIGHT - 1};
     cropcap.bounds = rect;
     cropcap.defrect = rect;
     constexpr v4l2_fract aspect{1, 1};
     cropcap.pixelaspect = aspect;
     return 0;
 }
+
+int f_ENUM_FRAMESIZES(void * a)
+{
+    v4l2_frmsizeenum & frame_size = *static_cast<v4l2_frmsizeenum*>(a);
+    std::print("[EMU] In ENUM_FRAMESIZES: index={}, pixel_format={}\n",
+        frame_size.index, v4l2_format_to_string(frame_size.pixel_format));
+    // we expose only one Discrete output format
+    if (frame_size.index != 0 or frame_size.pixel_format != EMULATED_PIXEL_FORMAT) {
+        errno = EINVAL;
+        return -1;
+    }
+    frame_size.type = V4L2_FRMSIZE_TYPE_DISCRETE;
+    constexpr v4l2_frmsize_discrete sz{EMULATED_WIDTH, EMULATED_HEIGHT};
+    frame_size.discrete = sz;
+    return 0;
+}
+
+int f_G_FMT(void * a)
+{
+    v4l2_format & format = *static_cast<v4l2_format*>(a);
+    std::print("[EMU] In G_FMT: type={}\n", v4l2_buf_type_to_str(format.type));
+    // we expose only one output format for this output
+    if (format.type != V4L2_BUF_TYPE_VIDEO_OUTPUT) {
+        errno = EINVAL;
+        return -1;
+    }
+    v4l2_pix_format & pix_fmt(format.fmt.pix);
+    pix_fmt.width = EMULATED_WIDTH;
+    pix_fmt.height = EMULATED_HEIGHT;
+    pix_fmt.pixelformat = EMULATED_PIXEL_FORMAT;
+    pix_fmt.field = V4L2_FIELD_NONE;
+    pix_fmt.bytesperline = 4 * EMULATED_WIDTH;
+    pix_fmt.sizeimage = pix_fmt.bytesperline * EMULATED_HEIGHT;
+    pix_fmt.colorspace = V4L2_COLORSPACE_DEFAULT;
+    pix_fmt.priv = 0;
+    pix_fmt.flags = 0;
+    pix_fmt.ycbcr_enc = 0;
+    pix_fmt.quantization = V4L2_QUANTIZATION_DEFAULT;
+    pix_fmt.xfer_func = V4L2_XFER_FUNC_DEFAULT;
+
+    return 0;
+}
+
+int generic_change_format(bool is_try, void * a)
+{
+    const char * const n = is_try ? "TRY" : "S";
+    // cannot be const, we must adjust value of bytesperline and sizeimage
+    v4l2_format & format = *static_cast<v4l2_format*>(a);
+    std::print("[EMU] In {}_FMT: type={}\n", n, v4l2_buf_type_to_str(format.type));
+    // we expose only one output format for this output
+    if (format.type != V4L2_BUF_TYPE_VIDEO_OUTPUT) {
+        errno = EINVAL;
+        return -1;
+    }
+    v4l2_pix_format & pix_fmt(format.fmt.pix);
+#define CHECK_MEMBER(f, v) \
+    if (pix_fmt.f != v) { \
+        std::print("[EMU] Check failed for {}_FMT, {}: expected {}, got {}\n", \
+            n, #f, v, pix_fmt.f); \
+        errno = EINVAL; \
+        return -1; \
+    }
+    CHECK_MEMBER(width, EMULATED_WIDTH);
+    CHECK_MEMBER(height, EMULATED_HEIGHT);
+    CHECK_MEMBER(pixelformat, EMULATED_PIXEL_FORMAT);
+    CHECK_MEMBER(field, unsigned(V4L2_FIELD_NONE));
+    pix_fmt.bytesperline = 4 * EMULATED_WIDTH;
+    pix_fmt.sizeimage = pix_fmt.bytesperline * EMULATED_HEIGHT;
+/* Let's relax these fields:
+    CHECK_MEMBER(colorspace, unsigned(V4L2_COLORSPACE_DEFAULT));
+    CHECK_MEMBER(priv, 0);
+    CHECK_MEMBER(flags, 0);
+    CHECK_MEMBER(ycbcr_enc, 0);
+    CHECK_MEMBER(quantization, unsigned(V4L2_QUANTIZATION_DEFAULT));
+    CHECK_MEMBER(xfer_func, unsigned(V4L2_XFER_FUNC_DEFAULT));
+*/
+#undef CHECK_MEMBER
+    return 0;
+}
+
+int f_TRY_FMT(void * a)
+{
+    return generic_change_format(true, a);
+}
+
+int f_S_FMT(void * a)
+{
+    return generic_change_format(false, a);
+}
+
+int f_ENUM_FRAMEINTERVALS(void * a)
+{
+    v4l2_frmivalenum & interval = *static_cast<v4l2_frmivalenum*>(a);
+    std::print("[EMU] In ENUM_FRAMEINTERVALS: index={}, pixel_format={}, width={}, height={}\n",
+        interval.index, v4l2_format_to_string(interval.pixel_format), interval.width, interval.height);
+    // we expose only one output format for this output
+    if (interval.index != 0 or interval.pixel_format != EMULATED_PIXEL_FORMAT or
+            interval.width != EMULATED_WIDTH or interval.height != EMULATED_HEIGHT) {
+        errno = EINVAL;
+        return -1;
+    }
+    interval.type = V4L2_FRMIVAL_TYPE_DISCRETE;
+    interval.discrete = EMULATED_FPS;
+    return 0;
+}
+
 
 } // Anonymous namespace
 
@@ -216,8 +331,8 @@ SYSTEM_CALL_OVERRIDE_BEGIN(ioctl, int fd, unsigned long request, ...)
     CASE_REQ_ARG_STUB(ENUM_DV_TIMINGS)
     // CASE_REQ_ARG_STUB(SUBDEV_ENUM_DV_TIMINGS)
     CASE_REQ_ARG(ENUM_FMT)
-    CASE_REQ_ARG_STUB(ENUM_FRAMESIZES)
-    CASE_REQ_ARG_STUB(ENUM_FRAMEINTERVALS)
+    CASE_REQ_ARG(ENUM_FRAMESIZES)
+    CASE_REQ_ARG(ENUM_FRAMEINTERVALS)
     CASE_REQ_ARG_STUB(ENUM_FREQ_BANDS)
     CASE_REQ_ARG(ENUMINPUT)
     CASE_REQ_ARG_STUB(ENUMOUTPUT)
@@ -243,9 +358,9 @@ SYSTEM_CALL_OVERRIDE_BEGIN(ioctl, int fd, unsigned long request, ...)
     CASE_REQ_ARG_STUB(TRY_EXT_CTRLS)
     CASE_REQ_ARG_STUB(G_FBUF)
     CASE_REQ_ARG_STUB(S_FBUF)
-    CASE_REQ_ARG_STUB(G_FMT)
-    CASE_REQ_ARG_STUB(S_FMT)
-    CASE_REQ_ARG_STUB(TRY_FMT)
+    CASE_REQ_ARG(G_FMT)
+    CASE_REQ_ARG(S_FMT)
+    CASE_REQ_ARG(TRY_FMT)
     CASE_REQ_ARG_STUB(G_FREQUENCY)
     CASE_REQ_ARG_STUB(S_FREQUENCY)
     CASE_REQ_ARG_STUB(G_INPUT)

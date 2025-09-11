@@ -5,11 +5,16 @@
 #pragma once
 
 #include <string>
+#include <linux/videodev2.h>
 
 constexpr std::string EMULATED_DEVICE_ABSOLUTE_PATH("/dev/video123");
 constexpr unsigned major_num = 81;
 constexpr unsigned minor_num = 123;
 constexpr int EMULATED_DEVICE_HANDLE(987654321);
+constexpr unsigned EMULATED_PIXEL_FORMAT = V4L2_PIX_FMT_RGBA32;
+constexpr unsigned EMULATED_WIDTH = 1024;
+constexpr unsigned EMULATED_HEIGHT = 2048;
+constexpr v4l2_fract EMULATED_FPS{1, 2};
 inline bool is_opened(false);
 
 #include <dlfcn.h> // dlsym()
