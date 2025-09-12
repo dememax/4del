@@ -22,8 +22,8 @@ int f_QUERYCAP(void * a)
     const char bus_info[] = "API Emulation using dlsym";
     strncpy((char*)caps.bus_info, bus_info, sizeof caps.bus_info); // 32
     caps.version = 1;
-    caps.capabilities = V4L2_CAP_DEVICE_CAPS;
-    caps.device_caps = V4L2_CAP_VIDEO_OUTPUT;
+    caps.capabilities = V4L2_CAP_DEVICE_CAPS; 
+    caps.device_caps = V4L2_CAP_VIDEO_OUTPUT | V4L2_CAP_STREAMING;
     return 0; // Success
 }
 
@@ -748,6 +748,14 @@ std::string v4l2_control_id_to_str(int id)
     return std::format("{} (#{}, {}+{})", (n ? n : "Unknown"), id, base, diff);
 }
 
+int f_G_CTRL(void * a)
+{
+    v4l2_control & control = *static_cast<v4l2_control*>(a);
+    std::print("[EMU] In G_CTRL: id={}, value={} - Ignored.\n", v4l2_control_id_to_str(control.id), control.value);
+    errno = EINVAL;
+    return -1;
+}
+
 int f_S_CTRL(void * a)
 {
     v4l2_control & control = *static_cast<v4l2_control*>(a);
@@ -924,7 +932,7 @@ SYSTEM_CALL_OVERRIDE_BEGIN(ioctl, int fd, unsigned long request, ...)
     CASE_REQ_ARG_STUB(S_AUDOUT)
     CASE_REQ_ARG_STUB(G_CROP)
     CASE_REQ_ARG_STUB(S_CROP)
-    CASE_REQ_ARG_STUB(G_CTRL)
+    CASE_REQ_ARG(G_CTRL)
     CASE_REQ_ARG(S_CTRL)
     CASE_REQ_ARG_STUB(G_DV_TIMINGS)
     CASE_REQ_ARG_STUB(S_DV_TIMINGS)
