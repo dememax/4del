@@ -15,12 +15,12 @@ int generic_open(const char * const realname, const open_func_type original_call
 {
     // Check if the target application is opening our emulated device
     if (pathname == EMULATED_DEVICE_ABSOLUTE_PATH) {
-        std::print("[EMU] Intercepted {}() for '{}', return {}\n", realname, pathname, EMULATED_DEVICE_HANDLE);
-        if (is_opened) {
+        std::print("[EMU] Intercepted {}() for '{}', return {}, number_of_handles={}\n", realname, pathname, EMULATED_DEVICE_HANDLE, number_of_handles);
+        if (number_of_handles) {
             std::print("Error: '{}' is already opened\n", pathname);
             exit(2);
         }
-        is_opened = true;
+        number_of_handles = 1;
         return EMULATED_DEVICE_HANDLE;
     }
 

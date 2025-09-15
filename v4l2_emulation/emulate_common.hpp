@@ -15,7 +15,7 @@ constexpr unsigned EMULATED_PIXEL_FORMAT = V4L2_PIX_FMT_RGBA32;
 constexpr unsigned EMULATED_WIDTH = 1024;
 constexpr unsigned EMULATED_HEIGHT = 2048;
 constexpr v4l2_fract EMULATED_FPS{1, 2};
-inline bool is_opened(false);
+inline unsigned number_of_handles = 0;
 
 #include <dlfcn.h> // dlsym()
 #include <stdlib.h> // exit()
