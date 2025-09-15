@@ -16,6 +16,23 @@ constexpr unsigned EMULATED_WIDTH = 1024;
 constexpr unsigned EMULATED_HEIGHT = 2048;
 constexpr v4l2_fract EMULATED_FPS{1, 2};
 inline unsigned number_of_handles = 0;
+constexpr v4l2_pix_format EMULATED_PIXEL_FORMAT_STRUCT = {
+    .width = EMULATED_WIDTH,
+    .height = EMULATED_HEIGHT,
+    .pixelformat = EMULATED_PIXEL_FORMAT,
+    .field = V4L2_FIELD_NONE,
+    .bytesperline = 4 * EMULATED_WIDTH,
+    .sizeimage = /* bytesperline x height */ 4 * EMULATED_WIDTH * EMULATED_HEIGHT,
+    .colorspace = V4L2_COLORSPACE_DEFAULT,
+    .priv = 0,
+    .flags = 0,
+    .ycbcr_enc = 0,
+    .quantization = V4L2_QUANTIZATION_DEFAULT,
+    .xfer_func = V4L2_XFER_FUNC_DEFAULT,
+};
+constexpr unsigned EMULATED_BUFFER_MMAP_MAX = 2;
+constexpr unsigned EMULATED_BUFFER_MMAP_OFFSETS[EMULATED_BUFFER_MMAP_MAX] = {2002002, 8008008};
+inline unsigned buffers_used = 0;
 
 #include <dlfcn.h> // dlsym()
 #include <stdlib.h> // exit()

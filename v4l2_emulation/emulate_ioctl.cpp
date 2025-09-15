@@ -181,20 +181,7 @@ int f_G_FMT(void * a)
         errno = EINVAL;
         return -1;
     }
-    v4l2_pix_format & pix_fmt(format.fmt.pix);
-    pix_fmt.width = EMULATED_WIDTH;
-    pix_fmt.height = EMULATED_HEIGHT;
-    pix_fmt.pixelformat = EMULATED_PIXEL_FORMAT;
-    pix_fmt.field = V4L2_FIELD_NONE;
-    pix_fmt.bytesperline = 4 * EMULATED_WIDTH;
-    pix_fmt.sizeimage = pix_fmt.bytesperline * EMULATED_HEIGHT;
-    pix_fmt.colorspace = V4L2_COLORSPACE_DEFAULT;
-    pix_fmt.priv = 0;
-    pix_fmt.flags = 0;
-    pix_fmt.ycbcr_enc = 0;
-    pix_fmt.quantization = V4L2_QUANTIZATION_DEFAULT;
-    pix_fmt.xfer_func = V4L2_XFER_FUNC_DEFAULT;
-
+    format.fmt.pix = EMULATED_PIXEL_FORMAT_STRUCT;
     return 0;
 }
 
@@ -210,28 +197,19 @@ int generic_change_format(bool is_try, void * a)
         return -1;
     }
     v4l2_pix_format & pix_fmt(format.fmt.pix);
-#define CHECK_MEMBER(f, v) \
-    if (pix_fmt.f != v) { \
+#define CHECK_PIXEL_FORMAT_STRUCT_MEMBER(f) \
+    if (pix_fmt.f != EMULATED_PIXEL_FORMAT_STRUCT.f) { \
         std::print("[EMU] Check failed for {}_FMT, {}: expected {}, got {}\n", \
-            n, #f, v, pix_fmt.f); \
+            n, #f, EMULATED_PIXEL_FORMAT_STRUCT.f, pix_fmt.f); \
         errno = EINVAL; \
         return -1; \
     }
-    CHECK_MEMBER(width, EMULATED_WIDTH);
-    CHECK_MEMBER(height, EMULATED_HEIGHT);
-    CHECK_MEMBER(pixelformat, EMULATED_PIXEL_FORMAT);
-    CHECK_MEMBER(field, unsigned(V4L2_FIELD_NONE));
-    pix_fmt.bytesperline = 4 * EMULATED_WIDTH;
-    pix_fmt.sizeimage = pix_fmt.bytesperline * EMULATED_HEIGHT;
-/* Let's relax these fields:
-    CHECK_MEMBER(colorspace, unsigned(V4L2_COLORSPACE_DEFAULT));
-    CHECK_MEMBER(priv, 0);
-    CHECK_MEMBER(flags, 0);
-    CHECK_MEMBER(ycbcr_enc, 0);
-    CHECK_MEMBER(quantization, unsigned(V4L2_QUANTIZATION_DEFAULT));
-    CHECK_MEMBER(xfer_func, unsigned(V4L2_XFER_FUNC_DEFAULT));
-*/
-#undef CHECK_MEMBER
+    CHECK_PIXEL_FORMAT_STRUCT_MEMBER(width);
+    CHECK_PIXEL_FORMAT_STRUCT_MEMBER(height);
+    CHECK_PIXEL_FORMAT_STRUCT_MEMBER(pixelformat);
+    CHECK_PIXEL_FORMAT_STRUCT_MEMBER(field);
+    pix_fmt = EMULATED_PIXEL_FORMAT_STRUCT;
+#undef CHECK_PIXEL_FORMAT_STRUCT_MEMBER
     return 0;
 }
 
@@ -854,6 +832,114 @@ int f_S_SELECTION(void * a)
     return 0;
 }
 
+template<typename T>
+std::string v4l2_memory_to_str(const T t)
+{
+#define CASE_V4L2_MEMORY(n) case V4L2_MEMORY_ ## n: return #n;
+    switch(static_cast<v4l2_memory>(t)) {
+    CASE_V4L2_MEMORY(MMAP)
+    CASE_V4L2_MEMORY(USERPTR)
+    CASE_V4L2_MEMORY(OVERLAY)
+    CASE_V4L2_MEMORY(DMABUF)
+    default:
+        return std::format("Unknown #{}", int(t));
+    }
+#undef CASE_V4L2_MEMORY
+}
+
+int f_REQBUFS(void * a)
+{
+    v4l2_requestbuffers & request = *static_cast<v4l2_requestbuffers*>(a);
+    std::print("[EMU] In REQBUFS: count={}, type={}, memory={}, capabilities={}, flags={}\n", request.count,
+            v4l2_buf_type_to_str(request.type), v4l2_memory_to_str(request.memory), request.capabilities, request.flags);
+#define CHECK_MEMBER(f, v) \
+    if (request.f != v) { \
+        std::print("[EMU] Check failed for REQBUFS, {}: expected {}, got {}\n", \
+            #f, int(v), int(request.f)); \
+        errno = EINVAL; \
+        return -1; \
+    }
+    CHECK_MEMBER(type, V4L2_BUF_TYPE_VIDEO_OUTPUT)
+    CHECK_MEMBER(memory, V4L2_MEMORY_MMAP)
+#undef CHECK_MEMBER
+    if (!request.count or request.count > EMULATED_BUFFER_MMAP_MAX) 
+        request.count = EMULATED_BUFFER_MMAP_MAX;
+    request.capabilities = V4L2_BUF_CAP_SUPPORTS_MMAP;
+    request.flags = 0;
+    return 0;
+}
+
+int f_CREATE_BUFS(void * a)
+{
+    v4l2_create_buffers & buffers = *static_cast<v4l2_create_buffers*>(a);
+    std::print("[EMU] In CREATE_BUFS: index={}, count={}, type={}, memory={}, capabilities={}, flags={}, max_num_buffers={}\n", buffers.count,
+            buffers.index, v4l2_buf_type_to_str(buffers.format.type), v4l2_memory_to_str(buffers.memory), buffers.capabilities, buffers.flags, buffers.max_num_buffers);
+#define CHECK_MEMBER(f, v) \
+    if (buffers.f != v) { \
+        std::print("[EMU] Check failed for CREATE_BUFS, {}: expected {}, got {}\n", \
+            #f, int(v), int(buffers.f)); \
+        errno = EINVAL; \
+        return -1; \
+    }
+    CHECK_MEMBER(format.type, V4L2_BUF_TYPE_VIDEO_OUTPUT)
+    v4l2_pix_format & pix_fmt = buffers.format.fmt.pix;
+#define CHECK_PIXEL_FORMAT_STRUCT_MEMBER(f) \
+    if (pix_fmt.f != EMULATED_PIXEL_FORMAT_STRUCT.f) { \
+        std::print("[EMU] Check failed for CREATE_BUFS, {}: expected {}, got {}\n", \
+            #f, EMULATED_PIXEL_FORMAT_STRUCT.f, pix_fmt.f); \
+        errno = EINVAL; \
+        return -1; \
+    }
+    CHECK_PIXEL_FORMAT_STRUCT_MEMBER(width);
+    CHECK_PIXEL_FORMAT_STRUCT_MEMBER(height);
+    CHECK_PIXEL_FORMAT_STRUCT_MEMBER(pixelformat);
+    CHECK_PIXEL_FORMAT_STRUCT_MEMBER(field);
+    pix_fmt = EMULATED_PIXEL_FORMAT_STRUCT;
+#undef CHECK_PIXEL_FORMAT_STRUCT_MEMBER
+    CHECK_MEMBER(memory, V4L2_MEMORY_MMAP)
+#undef CHECK_MEMBER
+    buffers.index = 0;
+    if (!buffers.count or buffers.count > EMULATED_BUFFER_MMAP_MAX) 
+        buffers.count = EMULATED_BUFFER_MMAP_MAX;
+    buffers.capabilities = V4L2_BUF_CAP_SUPPORTS_MMAP | V4L2_BUF_CAP_SUPPORTS_MAX_NUM_BUFFERS;
+    buffers.flags = 0;
+    buffers.max_num_buffers = EMULATED_BUFFER_MMAP_MAX;
+    return 0;
+}
+
+int f_QUERYBUF(void * a)
+{
+    v4l2_buffer & buffer = *static_cast<v4l2_buffer*>(a);
+    std::print("[EMU] In QUERYBUF: index={}, type={}, bytesused={}, flags={}, buffers_used={}\n",
+        buffer.index, v4l2_buf_type_to_str(buffer.type), buffer.bytesused, buffer.flags, buffers_used);
+    if (buffers_used == EMULATED_BUFFER_MMAP_MAX) {
+        std::print("[EMU] Check failed for QUERYBUF: no more buffers\n");
+        errno = EINVAL;
+        return -1;
+    }
+#define CHECK_MEMBER(f, v) \
+    if (buffer.f != v) { \
+        std::print("[EMU] Check failed for QUERYBUF, {}: expected {}, got {}\n", \
+            #f, int(v), int(buffer.f)); \
+        errno = EINVAL; \
+        return -1; \
+    }
+    CHECK_MEMBER(index, buffers_used)
+    CHECK_MEMBER(type, V4L2_BUF_TYPE_VIDEO_OUTPUT)
+#undef CHECK_MEMBER
+    buffer.bytesused = EMULATED_PIXEL_FORMAT_STRUCT.sizeimage;
+    buffer.flags = V4L2_BUF_FLAG_MAPPED;
+    buffer.field = V4L2_FIELD_NONE; // progressive
+    memset(&buffer.timestamp, 0, sizeof buffer.timestamp);
+    memset(&buffer.timecode, 0, sizeof buffer.timecode);
+    buffer.sequence = 0;
+    buffer.memory = V4L2_MEMORY_MMAP;
+    buffer.m.offset = EMULATED_BUFFER_MMAP_OFFSETS[buffers_used];
+    buffer.length = buffer.bytesused;
+    ++buffers_used;
+    return 0;
+}
+
 } // Anonymous namespace
 
 #define CASE_REQ_ARG(name) \
@@ -906,7 +992,7 @@ SYSTEM_CALL_OVERRIDE_BEGIN(ioctl, int fd, unsigned long request, ...)
     switch(request) {
     CASE_REQ_ARG(QUERYCAP)
     CASE_REQ_ARG(G_EXT_CTRLS)
-    CASE_REQ_ARG_STUB(CREATE_BUFS)
+    CASE_REQ_ARG(CREATE_BUFS)
     CASE_REQ_ARG(CROPCAP)
     CASE_REQ_ARG_STUB(DBG_G_CHIP_INFO)
     CASE_REQ_ARG_STUB(DBG_G_REGISTER)
@@ -981,14 +1067,14 @@ SYSTEM_CALL_OVERRIDE_BEGIN(ioctl, int fd, unsigned long request, ...)
     CASE_REQ_ARG_STUB(PREPARE_BUF)
     CASE_REQ_ARG_STUB(QBUF)
     CASE_REQ_ARG_STUB(DQBUF)
-    CASE_REQ_ARG_STUB(QUERYBUF)
+    CASE_REQ_ARG(QUERYBUF)
     CASE_REQ_ARG(QUERYCTRL)
     CASE_REQ_ARG_STUB(QUERY_EXT_CTRL)
     CASE_REQ_ARG_STUB(QUERYMENU)
     CASE_REQ_ARG_STUB(QUERY_DV_TIMINGS)
     CASE_REQ_ARG_STUB(QUERYSTD)
     // CASE_REQ_ARG_STUB(SUBDEV_QUERYSTD)
-    CASE_REQ_ARG_STUB(REQBUFS)
+    CASE_REQ_ARG(REQBUFS)
     CASE_REQ_ARG_STUB(REMOVE_BUFS)
     CASE_REQ_ARG_STUB(S_HW_FREQ_SEEK)
     CASE_REQ_ARG_STUB(STREAMON)
