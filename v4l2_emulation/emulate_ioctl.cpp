@@ -751,6 +751,11 @@ std::string v4l2_control_id_to_str(int id)
 int f_G_CTRL(void * a)
 {
     v4l2_control & control = *static_cast<v4l2_control*>(a);
+     if (control.id == V4L2_CID_MIN_BUFFERS_FOR_OUTPUT) {
+        std::print("[EMU] In G_CTRL: id=MIN_BUFFERS_FOR_OUTPUT: 1.\n");
+         control.value = 1;
+         return 0;
+     }
     std::print("[EMU] In G_CTRL: id={}, value={} - Ignored.\n", v4l2_control_id_to_str(control.id), control.value);
     errno = EINVAL;
     return -1;
