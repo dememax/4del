@@ -32,6 +32,27 @@ constexpr v4l2_pix_format EMULATED_PIXEL_FORMAT_STRUCT = {
 };
 constexpr unsigned EMULATED_BUFFER_MMAP_MAX = 2;
 constexpr unsigned EMULATED_BUFFER_MMAP_OFFSETS[EMULATED_BUFFER_MMAP_MAX] = {2002002, 8008008};
+enum class BufferState {
+    /// The driver has allocated the memory, but it's not yet accessible to the application.
+    /// When: This is the initial state after a successful VIDIOC_REQBUFS call
+    /// but before the buffer has been mapped with mmap().
+    /// Owner: The driver.
+    Unmapped,
+
+    /// The application has exclusive access to the buffer's memory.
+    /// It is responsible for filling it with video data before queuing it again.
+    /// This is the state between VIDIOC_DQBUF and VIDIOC_QBUF.
+    /// When: A buffer enters this state either after it is first mapped with mmap()
+    /// or after it is returned to the application by VIDIOC_DQBUF.
+    /// Owner: The application.
+    Dequeued,
+
+    /// Description: The driver has exclusive access to the buffer's memory.
+    /// It reads the video data for output. The application must not touch the buffer's contents while it is in this state.
+    /// When: A buffer enters this state after the application calls VIDIOC_QBUF.
+    /// Owner: The driver.
+    Queued,
+};
 inline unsigned buffers_used = 0;
 
 #include <dlfcn.h> // dlsym()
