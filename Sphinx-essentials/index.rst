@@ -2,6 +2,10 @@
 Sphinx essentials
 ####################
 
+.. contents:: Contents
+   :depth: 3
+   :local:
+
 My Quick help on Shpinx.
 
 The main page: https://www.sphinx-doc.org/
@@ -144,3 +148,28 @@ Names
 
 In literalinclude you don't need to escape spaces, keep them as-is.
 Only for images.
+
+****************************************
+Tables
+****************************************
+
+In addition to ``Grid Tables`` and ``Simple Tables``,
+there are ``csv-table`` and ``list-table`` directives.
+
+=====================================
+List table
+=====================================
+
+.. code-block:: rst
+
+   .. list-table:: Frozen Delights!
+      :widths: 15 10 30
+      :header-rows: 1
+
+      * - Treat
+        - Quantity
+        - Description
+      * - Albatross
+        - 2.99
+        - On a stick!
+      .............
