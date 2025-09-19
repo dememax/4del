@@ -24,18 +24,20 @@ int generic_open(const char * const realname, const open_func_type original_call
         return EMULATED_DEVICE_HANDLE;
     }
 
-    std::print("[EMU] Pass through {}() for '{}'\n", realname, pathname);
-
     // For any other path, call the original open function
     if (flags & O_CREAT) {
         va_list args;
         va_start(args, flags);
         mode_t mode = va_arg(args, mode_t);
         va_end(args);
-        return original_call(pathname, flags, mode);
+        const int ret = original_call(pathname, flags, mode);
+        std::print("[EMU] Pass through {}(O_CREAT) for '{}': {}\n", realname, pathname, ret);
+        return ret;
     }
 
-    return original_call(pathname, flags);
+    const int ret = original_call(pathname, flags);
+    std::print("[EMU] Pass through {}() for '{}': {}\n", realname, pathname, ret);
+    return ret;
 }
 
 } // Anonymous namespace
