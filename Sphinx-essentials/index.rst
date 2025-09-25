@@ -136,6 +136,8 @@ In the text, the title will be displayed, not the file name.
 Include a raw log file
 ***************************************************
 
+https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html#directive-literalinclude
+
 .. code-block:: rst
    :caption: Include whole content of a text file without indent on a page
 
@@ -148,6 +150,16 @@ Names
 
 In literalinclude you don't need to escape spaces, keep them as-is.
 Only for images.
+
+===========
+Useful options
+===========
+
+.. code-block:: rst
+   :caption: Specify exactly which lines to include with comma separated numbers
+
+   .. literalinclude:: example.py
+      :lines: 1,3,5-10,20-
 
 ****************************************
 Tables
