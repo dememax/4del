@@ -6,6 +6,8 @@
 
 #include <string>
 #include <linux/videodev2.h>
+#include <vector>
+#include <cstdint>
 
 constexpr std::string EMULATED_DEVICE_ABSOLUTE_PATH("/dev/video123");
 constexpr unsigned major_num = 81;
@@ -32,6 +34,8 @@ constexpr v4l2_pix_format EMULATED_PIXEL_FORMAT_STRUCT = {
 };
 constexpr unsigned EMULATED_BUFFER_MMAP_MAX = 2;
 constexpr unsigned EMULATED_BUFFER_MMAP_OFFSETS[EMULATED_BUFFER_MMAP_MAX] = {2002002, 8008008};
+inline std::vector<uint8_t> EMULATED_BUFFER_MMAP_BUFFERS[EMULATED_BUFFER_MMAP_MAX];
+
 enum class BufferState {
     /// The driver has allocated the memory, but it's not yet accessible to the application.
     /// When: This is the initial state after a successful VIDIOC_REQBUFS call
