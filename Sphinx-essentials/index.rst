@@ -25,10 +25,10 @@ Sections
 Code block
 ************
 
-.. code-block:: rst
+.. code:: rst
    :caption: Adding code block sample
 
-   .. code-block:: bash
+   .. code:: bash
       :caption: Adding code block sample
 
       export A=b
@@ -51,7 +51,7 @@ This is a convention, not a requirement.
 Images
 ***************
 
-.. code-block:: rst
+.. code:: rst
    :caption: Introducing an image from a local Jpeg file
 
    .. image:: ./IMG_20250505_144207\ Guillaume\ -\ Yocto\ 3\ layers\ -\ v4l2.jpg
@@ -64,14 +64,14 @@ Names
 
 If I use the file name with spacese as it is:
 
-.. code-block:: rst
+.. code:: rst
    :caption: Introducing an image from a local Jpeg file
 
    .. image:: ./IMG_20250505_144207 Guillaume - Yocto 3 layers - v4l2.jpg
 
 This gives an error:
 
-.. code-block::
+.. code::
    :caption: When file name with spaces is used as it is
 
    ..../docs/index.rst:8: WARNING: image file not readable: IMG_20250505_144207Guillaume-Yocto3layers-v4l2.jpg [image.not_readable]
@@ -98,7 +98,7 @@ but unfortunately they don't work:
 
    Wrap the file path in quotes, like this:
 
-   .. code-block:: rst
+   .. code:: rst
       :caption: Using quotes for the file name with spaces
 
       .. image:: "./IMG_20250505_144207 Guillaume - Yocto 3 layers - v4l2.jpg"
@@ -108,7 +108,7 @@ but unfortunately they don't work:
 #. Use URL encoding to represent special characters in the file path.
    For example, a space would be represented as %20:
 
-   .. code-block:: rst
+   .. code:: rst
       :caption: Using URL encoding for the file name with spaces
 
       .. image:: ./IMG_20250505_144207%20Guillaume%20-%20Yocto%203%20layers%20-%20v4l2.jpg
@@ -125,7 +125,7 @@ The name of file can contain spaces, not like for image names,
 say, you've got '09-51 Ubuntu apt - Phasing - Asking Meta.rst',
 you need only omit the extension of the file:
 
-.. code-block:: rst
+.. code:: rst
    :caption: Including a link to the local document
 
    :doc:`./09-51 Ubuntu apt - Phasing - Asking Meta`
@@ -138,7 +138,7 @@ Include a raw log file
 
 https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html#directive-literalinclude
 
-.. code-block:: rst
+.. code:: rst
    :caption: Include whole content of a text file without indent on a page
 
    .. literalinclude:: 11-02 curl get libwebsockets-1.23 from yocto recipe - redirect.txt
@@ -155,7 +155,7 @@ Only for images.
 Useful options
 ===========
 
-.. code-block:: rst
+.. code:: rst
    :caption: Specify exactly which lines to include with comma separated numbers
 
    .. literalinclude:: example.py
@@ -172,7 +172,7 @@ there are ``csv-table`` and ``list-table`` directives.
 List table
 =====================================
 
-.. code-block:: rst
+.. code:: rst
 
    .. list-table:: Frozen Delights!
       :widths: 15 10 30
