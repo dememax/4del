@@ -6,9 +6,26 @@ Sphinx essentials
    :depth: 3
    :local:
 
+Maxim P. Dementiev, 2025.
+
 My Quick help on Shpinx.
 
-The main page: https://www.sphinx-doc.org/
+Sphinx: https://www.sphinx-doc.org/
+
+reST (docutils): https://docutils.sourceforge.io/rst.html
+
+
+*********************
+Indentation
+*********************
+
+The specific number of spaces is not fixed,
+but it must be at least one
+more than the directive's own indentation
+and must be the same for the whole block.
+
+Why do most code-block examples use 3 spaces?
+This is a convention, not a requirement.
 
 **********
 Sections
@@ -25,6 +42,67 @@ Sections
 Code block
 ************
 
+=======================
+Literal Blocks
+=======================
+
+If you don't need syntax highlighting.
+
+---------------------------------------------------
+Indented literal blocks
+---------------------------------------------------
+
+.. code:: rst
+
+   Paragraph:
+
+   ::
+
+      Literal block text
+
+Or more consize, the same:
+
+.. code:: rst
+
+   Paragraph::
+
+      Literal block text
+
+---------------------------------------------------
+Quoted literal blocks
+---------------------------------------------------
+
+Quoted literal blocks are unindented contiguous blocks of text
+where each line begins with the same non-alphanumeric printable 7-bit ASCII character.
+
+A blank line ends a quoted literal block.
+
+Valid quoting characters::
+
+   ! " # $ % & ' ( ) * + , - . / : ; < = > ? @ [ \ ] ^ _ ` { | } ~
+
+.. code:: rst
+
+   ::
+
+   >> Why?
+   >
+   > Because!
+
+Result:
+
+   ::
+
+   >> Why?
+   >
+   > Because!
+
+=======================
+Code blocks
+=======================
+
+With optional syntax highlighting.
+
 .. code:: rst
    :caption: Adding code block sample
 
@@ -40,18 +118,6 @@ Aliases: ``.. code-block::``, ``.. sourcecode::``.
 Docutils: https://docutils.sourceforge.io/docs/ref/rst/directives.html#code
 
 Sphinx: https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html#directive-code-block
-
-=============
-Indentation
-=============
-
-The specific number of spaces is not fixed,
-but it must be at least one
-more than the directive's own indentation
-and must be the same for the whole block.
-
-Why do most code-block examples use 3 spaces?
-This is a convention, not a requirement.
 
 ***************
 Images
