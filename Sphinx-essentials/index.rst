@@ -35,6 +35,12 @@ Code block
 
 For languages supported: https://pygments.org/docs/lexers/
 
+Aliases: ``.. code-block::``, ``.. sourcecode::``.
+
+Docutils: https://docutils.sourceforge.io/docs/ref/rst/directives.html#code
+
+Sphinx: https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html#directive-code-block
+
 =============
 Indentation
 =============
