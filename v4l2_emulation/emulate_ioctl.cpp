@@ -869,6 +869,7 @@ int f_REQBUFS(void * a)
     return 0;
 }
 
+/* we don't need it for minimal implemenation
 int f_CREATE_BUFS(void * a)
 {
     v4l2_create_buffers & buffers = *static_cast<v4l2_create_buffers*>(a);
@@ -906,6 +907,7 @@ int f_CREATE_BUFS(void * a)
     buffers.max_num_buffers = EMULATED_BUFFER_MMAP_MAX;
     return 0;
 }
+*/
 
 int f_QUERYBUF(void * a)
 {
@@ -927,15 +929,15 @@ int f_QUERYBUF(void * a)
     CHECK_MEMBER(index, buffers_used)
     CHECK_MEMBER(type, V4L2_BUF_TYPE_VIDEO_OUTPUT)
 #undef CHECK_MEMBER
-    buffer.bytesused = EMULATED_PIXEL_FORMAT_STRUCT.sizeimage;
-    buffer.flags = V4L2_BUF_FLAG_MAPPED;
-    buffer.field = V4L2_FIELD_NONE; // progressive
+    buffer.bytesused = 0; // application must set this field when it sends a buffer to the driver
+    buffer.flags = V4L2_BUF_FLAG_TIMESTAMP_MONOTONIC; // V4L2_BUF_FLAG_MAPPED;
+    buffer.field = V4L2_FIELD_ANY; // V4L2_FIELD_NONE; // progressive
     memset(&buffer.timestamp, 0, sizeof buffer.timestamp);
     memset(&buffer.timecode, 0, sizeof buffer.timecode);
     buffer.sequence = 0;
     buffer.memory = V4L2_MEMORY_MMAP;
     buffer.m.offset = EMULATED_BUFFER_MMAP_OFFSETS[buffers_used];
-    buffer.length = buffer.bytesused;
+    buffer.length = EMULATED_PIXEL_FORMAT_STRUCT.sizeimage;
     ++buffers_used;
     return 0;
 }
@@ -992,7 +994,7 @@ SYSTEM_CALL_OVERRIDE_BEGIN(ioctl, int fd, unsigned long request, ...)
     switch(request) {
     CASE_REQ_ARG(QUERYCAP)
     CASE_REQ_ARG(G_EXT_CTRLS)
-    CASE_REQ_ARG(CREATE_BUFS)
+    CASE_REQ_ARG_STUB(CREATE_BUFS) // CASE_REQ_ARG
     CASE_REQ_ARG(CROPCAP)
     CASE_REQ_ARG_STUB(DBG_G_CHIP_INFO)
     CASE_REQ_ARG_STUB(DBG_G_REGISTER)
