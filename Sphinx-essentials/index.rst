@@ -28,6 +28,15 @@ Why do most code-block examples use 3 spaces?
 This is a convention, not a requirement.
 
 **********
+Fields
+**********
+
+.. code:: rst
+
+   :Field 1: Value 1
+   :Field two: value two
+
+**********
 Sections
 **********
 
@@ -228,10 +237,15 @@ Useful options
 ===========
 
 .. code:: rst
-   :caption: Specify exactly which lines to include with comma separated numbers
+   :caption: Specify exactly which lines to include with comma separated numbers and emphasise particular lines
 
    .. literalinclude:: example.py
       :lines: 1,3,5-10,20-
+      :emphasize-lines: 1,2,4-6
+      :dedent:
+
+* `emphasize-lines`: is counted in showed lines, not the source lines.
+* `dedent`: no argument given, all common leading indentation is removed
 
 ****************************************
 Tables
