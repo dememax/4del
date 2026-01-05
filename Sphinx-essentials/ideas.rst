@@ -37,3 +37,9 @@ the length should grow each time making a kind of the "Christmas tree":
    ============
 
    --------------------------
+
+=============================================================
+The difference in overlining and underlining lines length
+=============================================================
+
+The difference in length creates some additional anchors as well for comparison.
