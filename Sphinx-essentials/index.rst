@@ -271,3 +271,30 @@ List table
         - 2.99
         - On a stick!
       .............
+
+*************************
+Index-generating markup
+*************************
+
+Simply:
+
+.. code:: rst
+
+   .. index:: single: Yocto; build
+
+   *********************
+   Chapter target
+   *********************
+
+Other:
+
+.. code:: rst
+
+   .. index::
+      single: leve1; leve2
+      pair: Bee; Dee
+      pair: module; sys
+
+   *********************
+   Chapter to which
+   *********************
