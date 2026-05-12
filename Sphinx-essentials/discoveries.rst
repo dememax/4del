@@ -1,6 +1,6 @@
-####################
-Sphinx discoveries
-####################
+#########################################
+Sphinx and reStructuredText discoveries
+#########################################
 
 ***************************
 Queries for static files
@@ -40,3 +40,23 @@ In the context of Sphinx:
   (like stylesheets or JavaScript for the search function)
   when you rebuild and deploy your documentation,
   preventing issues caused by stale cached files.
+
+********************************************
+Simple (Compact) vs. Complex (Loose) Lists
+********************************************
+
+In reStructuredText (reST), the vertical spacing (compactness)
+of lists is determined by whether the parser classifies
+the list as a Simple List or a Complex List.
+
+======================
+The "Poisoning" Rule
+======================
+
+From a safety and maintainability perspective,
+relying on "invisible" blank lines to control layout is often cited
+as a weakness of both reST and Markdown.
+
+It is easy for a collaborator or an automated formatter
+to **accidentally insert a blank line**, "poisoning" a compact list
+and breaking the intended visual design of the documentation.
