@@ -55,11 +55,14 @@ Code block
 Literal Blocks
 =======================
 
-If you don't need syntax highlighting.
-
 ---------------------------------------------------
 Indented literal blocks
 ---------------------------------------------------
+
+If you don't need syntax highlighting.
+
+The ``::`` shorthand produces a plain literal block with
+**no language** — you can't annotate it inline.
 
 .. code:: rst
 
@@ -76,6 +79,31 @@ Or more consize, the same:
    Paragraph::
 
       Literal block text
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File-wide default syntax highlighting
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you do need syntax highlighting.
+
+Place a ``.. highlight::`` directive once
+at the top (or at a section boundary),
+and all subsequent ``::`` blocks inherit it:
+
+.. code:: rst
+
+   .. highlight:: bash
+
+   Run it::
+
+       sudo net-tools/net-setup.sh
+
+The highlight directive stays in effect until overridden by another one
+or until the end of the file.
+
+Sphinx's own docs use this pattern heavily — a file about shell commands
+sets ``.. highlight::`` console once at the top,
+then uses ``::`` freely throughout.
 
 ---------------------------------------------------
 Quoted literal blocks
