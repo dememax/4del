@@ -245,6 +245,10 @@ In the text, the title will be displayed, not the file name.
 Include a raw log file
 ***************************************************
 
+===================
+Show selected lines
+===================
+
 https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html#directive-literalinclude
 
 .. code:: rst
@@ -253,16 +257,16 @@ https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html#dire
    .. literalinclude:: 11-02 curl get libwebsockets-1.23 from yocto recipe - redirect.txt
       :language: none
 
-===========
-Names
-===========
+-------------------------------------
+File names for ``literalinclude``
+-------------------------------------
 
 In literalinclude you don't need to escape spaces, keep them as-is.
 Only for images.
 
-===========
+-----------------
 Useful options
-===========
+-----------------
 
 .. code:: rst
    :caption: Specify exactly which lines to include with comma separated numbers and emphasise particular lines
@@ -274,6 +278,15 @@ Useful options
 
 * `emphasize-lines`: is counted in showed lines, not the source lines.
 * `dedent`: no argument given, all common leading indentation is removed
+
+=============================
+Open a raw log file "as is"
+=============================
+
+.. code:: rst
+   :caption: How to open a raw log file "as is"
+
+   :download:`10-17 apt install libgstreamer-plugins-base1.0-dev on updated Ubuntu 26.04 LTS.txt`
 
 ****************************************
 Tables
