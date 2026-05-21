@@ -283,6 +283,8 @@ Useful options
 Open a raw log file "as is"
 =============================
 
+https://www.sphinx-doc.org/en/master/usage/referencing.html#role-download
+
 .. code:: rst
    :caption: How to open a raw log file "as is"
 
