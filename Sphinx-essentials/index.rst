@@ -3,10 +3,10 @@ Sphinx essentials
 ####################
 
 .. contents:: Contents
-   :depth: 3
+   :depth: 4
    :local:
 
-Maxim P. Dementiev, 2025.
+Maxim P. Dementiev, 2025-2026.
 
 My Quick help on Shpinx.
 
