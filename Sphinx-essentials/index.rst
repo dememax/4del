@@ -140,7 +140,7 @@ Code blocks
 
 With optional syntax highlighting.
 
-.. code:: rst
+.. code-block:: rst
    :caption: Adding code block sample
 
    .. code:: bash
@@ -160,7 +160,7 @@ Sphinx: https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.h
 Images
 ***************
 
-.. code:: rst
+.. code-block:: rst
    :caption: Introducing an image from a local Jpeg file
 
    .. image:: ./IMG_20250505_144207\ Guillaume\ -\ Yocto\ 3\ layers\ -\ v4l2.jpg
@@ -173,14 +173,14 @@ Names
 
 If I use the file name with spacese as it is:
 
-.. code:: rst
+.. code-block:: rst
    :caption: Introducing an image from a local Jpeg file
 
    .. image:: ./IMG_20250505_144207 Guillaume - Yocto 3 layers - v4l2.jpg
 
 This gives an error:
 
-.. code::
+.. code-block::
    :caption: When file name with spaces is used as it is
 
    ..../docs/index.rst:8: WARNING: image file not readable: IMG_20250505_144207Guillaume-Yocto3layers-v4l2.jpg [image.not_readable]
@@ -207,7 +207,7 @@ but unfortunately they don't work:
 
    Wrap the file path in quotes, like this:
 
-   .. code:: rst
+   .. code-block:: rst
       :caption: Using quotes for the file name with spaces
 
       .. image:: "./IMG_20250505_144207 Guillaume - Yocto 3 layers - v4l2.jpg"
@@ -217,7 +217,7 @@ but unfortunately they don't work:
 #. Use URL encoding to represent special characters in the file path.
    For example, a space would be represented as %20:
 
-   .. code:: rst
+   .. code-block:: rst
       :caption: Using URL encoding for the file name with spaces
 
       .. image:: ./IMG_20250505_144207%20Guillaume%20-%20Yocto%203%20layers%20-%20v4l2.jpg
@@ -234,7 +234,7 @@ The name of file can contain spaces, not like for image names,
 say, you've got '09-51 Ubuntu apt - Phasing - Asking Meta.rst',
 you need only omit the extension of the file:
 
-.. code:: rst
+.. code-block:: rst
    :caption: Including a link to the local document
 
    :doc:`./09-51 Ubuntu apt - Phasing - Asking Meta`
@@ -251,7 +251,7 @@ Show selected lines
 
 https://www.sphinx-doc.org/en/master/usage/restructuredtext/directives.html#directive-literalinclude
 
-.. code:: rst
+.. code-block:: rst
    :caption: Include whole content of a text file without indent on a page
 
    .. literalinclude:: 11-02 curl get libwebsockets-1.23 from yocto recipe - redirect.txt
@@ -268,7 +268,7 @@ Only for images.
 Useful options
 -----------------
 
-.. code:: rst
+.. code-block:: rst
    :caption: Specify exactly which lines to include with comma separated numbers and emphasise particular lines
 
    .. literalinclude:: example.py
@@ -285,7 +285,7 @@ Open a raw log file "as is"
 
 https://www.sphinx-doc.org/en/master/usage/referencing.html#role-download
 
-.. code:: rst
+.. code-block:: rst
    :caption: How to open a raw log file "as is"
 
    :download:`10-17 apt install libgstreamer-plugins-base1.0-dev on updated Ubuntu 26.04 LTS.txt`
@@ -341,3 +341,14 @@ Other:
    *********************
    Chapter to which
    *********************
+
+******************
+Other documents
+******************
+
+.. toctree::
+   :maxdepth: 1
+
+   cheatsheet
+   discoveries
+   ideas
